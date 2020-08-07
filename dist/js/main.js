@@ -32,7 +32,7 @@ var game = (function(){
   var spawner = null;
 
   // Create a method for launching spawns
-  function launchSpawns(){
+  function launchSpawns() {
     // run spawner every 400 ms
     spawner = setInterval(() => {
       // random string identifier for spawn
@@ -52,23 +52,38 @@ var game = (function(){
         speed: spawn.speed
       }
     }, 400);
+  }
 
-    ctx.fillStyle=spawn.fill;
 
-    ctx.clearRect(
-      spawn.x-1,
-      spawn.y-spawn.speed,
-      spawn.w+2,
-      spawn.h+2
-    );
-    
+  // move all spawn
+  function moveSpawns() {
+    // loop spawns obj and move each spawn
+    if (Object.keys(spawns).length > 0) {
+      for (let spawn in spawns) {
+        // move spawn if spawn not moved off-screen
+        if(spawns[spawn].y <= canvas.height) {
+          ctx.fillStyle = spawns[spawn].fill;
+          ctx.save();
+          ctx.clearRect(
+            spawns[spawn].x - 1,
+            spawns[spawn].y - spawns[spawn].speed,
+            spawns[spawn].w + 2,
+            spawns[spawn].h + 2
+          );
+          ctx.fillRect(
+            spawns[spawn].x,
+            spawns[spawn].y = (spawns[spawn].y+spawns[spawn].speed),
+            spawns[spawn].w,
+            spawns[spawn].h
+          );
 
-    ctx.fillRect(
-      spawn.x,
-      spawn.y = (spawn.y + spawn.speed),
-      spawn.w,
-      spawn.h
-    );
+          ctx.restore();
+        } else {
+          // delete spawn if spawn moves off-screen
+          delete spawns[spawn];
+        }
+      }
+    }
   }
 
   return {
@@ -136,7 +151,7 @@ var game = (function(){
     animate: function(){
       this.player();
       // Animate the spawns
-      launchSpawns();
+      moveSpawns();
       window.requestAnimationFrame(this.animate.bind(this));
     },
 
@@ -144,6 +159,7 @@ var game = (function(){
       canvas.height = 600;
       canvas.width = 800;
 
+      launchSpawns();
       this.animate();
     }
   }

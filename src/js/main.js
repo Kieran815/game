@@ -54,6 +54,7 @@ var game = (function(){
     }, 400);
   }
 
+
   // move all spawn
   function moveSpawns() {
     // loop spawns obj and move each spawn
@@ -158,6 +159,7 @@ var game = (function(){
       canvas.height = 600;
       canvas.width = 800;
 
+      launchSpawns();
       this.animate();
     }
   }
