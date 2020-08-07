@@ -1,3 +1,13 @@
 canvas {
   background: #222;
-}
+  background-image: url("../../itsGonRain.jpg");
+  background-size: cover; }
+
+#score {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  font-weight: bold;
+  font-size: 20px;
+  color: #fff; }

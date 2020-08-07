@@ -9,7 +9,7 @@ var game = (function(){
     y:475,
     h: 25,
     w: 25,
-    fill: '#fff',
+    fill: '#ffbb00',
     // Add a default direction for player movement.
     dir: 'right',
     // Add a speed property to the player this is the number of pixels the player will move each frame
@@ -22,7 +22,7 @@ var game = (function(){
     y: 0,
     h: 10,
     w: 10,
-    fill: '#ff0',
+    fill: '#1b14e3',
     speed: 5,
   }
 
@@ -30,6 +30,11 @@ var game = (function(){
   var spawns = {};
   // init var for launching spawns
   var spawner = null;
+  //Add the animation frames to a variable that we can kill later
+  var animation  = null;
+  var gameOver = false;
+  var score = 0;
+
 
   // Create a method for launching spawns
   function launchSpawns() {
@@ -49,12 +54,11 @@ var game = (function(){
         h: spawn.h,
         w: spawn.w,
         fill: spawn.fill,
-        speed: spawn.speed
+        speed:Math.floor(Math.random() * 7),
       }
     }, 400);
   }
-
-
+  
   // move all spawn
   function moveSpawns() {
     // loop spawns obj and move each spawn
@@ -76,9 +80,23 @@ var game = (function(){
             spawns[spawn].w,
             spawns[spawn].h
           );
-
           ctx.restore();
+
+          // When each spawn, moves detect if that spawn shares common pixels with the player
+          if (player.x < spawns[spawn].x + spawns[spawn].w && spawns[spawn].x > player.x && spawns[spawn].x < (player.x + player.w) && player.y < spawns[spawn].y + spawns[spawn].h && player.y + player.h > spawns[spawn].y) {
+            // If there is a collision set gameOver to true
+            gameOver = true;
+            // ...kill the animation frames
+            cancelAnimationFrame(animation);
+            // ...then kill the spawner
+            clearInterval(spawner);
+          }
         } else {
+          // score++ when spawn moves off-screen
+          score += 10;
+          console.log(score);
+          // Write the score to a separate div
+          document.getElementById('score').innerHTML = score;
           // delete spawn if spawn moves off-screen
           delete spawns[spawn];
         }
@@ -86,10 +104,8 @@ var game = (function(){
     }
   }
 
-  return {
-
     // Draw the player to the canvas
-    player: function(){
+    function movePlayer(){
       ctx.fillStyle=player.fill;
 
       // Add x pixels to move the player to the right
@@ -97,9 +113,9 @@ var game = (function(){
         // Define how many pixels the player should move each frame (i.e. speed)
         ctx.clearRect(
           player.x - player.speed,
-          player.y-1,
-          player.w+2,
-          player.h+2
+          player.y - 1,
+          player.w + 2,
+          player.h + 2
         );
 
         ctx.fillRect(
@@ -118,9 +134,9 @@ var game = (function(){
         //4. Change player.x+1 to player.x+player.speed
         ctx.clearRect(
           player.x + player.speed,
-          player.y-1,
-          player.w+2,
-          player.h+2
+          player.y - 1,
+          player.w + 2,
+          player.h + 2
         );
         // Subtract x pixels to move the player to the left
         ctx.fillRect(
@@ -135,7 +151,22 @@ var game = (function(){
           player.dir = 'right';
         }
       }
-    },
+    }
+
+    // Create an animation frame
+    // Redraw the player every time a frame is executed
+    function animate(){
+      movePlayer();
+      // Animate the spawns
+      moveSpawns();
+      // Only animate if the game is not over.
+      if(gameOver===false){
+        animation = window.requestAnimationFrame(animate.bind(animation));
+      }
+    }
+
+
+  return {
 
     // Create a setter for changing the current direction of the user.
     changeDirection: function(){
@@ -146,21 +177,12 @@ var game = (function(){
       }
     },
 
-    // Create an animation frame
-    // Redraw the player every time a frame is executed
-    animate: function(){
-      this.player();
-      // Animate the spawns
-      moveSpawns();
-      window.requestAnimationFrame(this.animate.bind(this));
-    },
-
     init: function(){
       canvas.height = 600;
       canvas.width = 800;
 
       launchSpawns();
-      this.animate();
+      animate();
     }
   }
 })();
